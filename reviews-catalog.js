@@ -91,22 +91,28 @@ var RW_CATALOG_CONFIG = {
 
     // Завантажуємо середній рейтинг для всіх потрібних slug одним запитом
     var filter = toLoad.map(function (s) { return 'product_id=eq.' + encodeURIComponent(s); }).join(',');
-    fetch(BASE + '/reviews?or=(' + filter + ')&approved=eq.true&select=product_id,rating', { headers: H })
+    // Шукаємо по числовому uid який міститься в product_id slug
+    var uidFilter = toLoad.map(function(uid) { return 'product_id=like.*' + uid + '*'; }).join(',');
+    fetch(BASE + '/reviews?or=(' + uidFilter + ')&approved=eq.true&select=product_id,rating', { headers: H })
       .then(function (r) { return r.json(); })
       .then(function (rows) {
-        // Групуємо по product_id
+        // Групуємо — знаходимо який uid міститься в product_id
         var groups = {};
         rows.forEach(function (r) {
-          if (!groups[r.product_id]) groups[r.product_id] = [];
-          groups[r.product_id].push(r.rating);
+          toLoad.forEach(function(uid) {
+            if (r.product_id.indexOf(uid) !== -1) {
+              if (!groups[uid]) groups[uid] = [];
+              groups[uid].push(r.rating);
+            }
+          });
         });
-        toLoad.forEach(function (slug) {
-          var ratings = groups[slug] || [];
+        toLoad.forEach(function (uid) {
+          var ratings = groups[uid] || [];
           if (ratings.length) {
             var avg = ratings.reduce(function (s, v) { return s + v; }, 0) / ratings.length;
-            cache[slug] = { avg: avg, total: ratings.length };
+            cache[uid] = { avg: avg, total: ratings.length };
           } else {
-            cache[slug] = null; // немає відгуків
+            cache[uid] = null;
           }
         });
         applyRatings(cards);
