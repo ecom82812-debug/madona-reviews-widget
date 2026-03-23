@@ -100,12 +100,20 @@ function rwInitProductRating(uid) {
     titleEl.parentNode.insertBefore(wrap, titleEl);
 
     rwFetchRating(uid, function(data) {
-      if (!data) { wrap.style.display = 'none'; return; }
-      wrap.innerHTML =
-        rwStarsHtml(data.avg, RW_CATALOG_CONFIG.starSize_product) +
-        '<strong style="color:#111;font-weight:500;">' + data.avg.toFixed(1) + '</strong>' +
-        '<span style="color:#AAA;font-size:12px;">(' + data.count + ' відгуків)</span>';
-    });
+
+  if (!data || !data.count || data.count === 0) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  wrap.style.display = '';
+  wrap.style.cssText = 'display:flex;align-items:center;gap:8px;font-family:inherit;font-size:13px;color:#666;margin:6px 0 10px;cursor:pointer;flex-wrap:wrap;';
+
+  wrap.innerHTML =
+    rwStarsHtml(data.avg, RW_CATALOG_CONFIG.starSize_product) +
+    '<strong style="color:#9E9E9E;font-weight:400;font-size:13px;">' + data.avg.toFixed(1) + '</strong>' +
+    '<span style="color:#7A5A2F;font-size:13px;text-decoration:underline;text-underline-offset:2px;">' + data.count + ' відгуків ↓</span>';
+});
 
     return true;
   }
