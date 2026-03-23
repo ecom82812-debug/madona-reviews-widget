@@ -123,9 +123,28 @@ function rwInitProductRating(uid) {
 }
 
 // ── Отримати UID з URL ──────────────────────────────────────
-function rwGetUidFromPath(path) {
+function rwGetCurrentProductUid() {
+  var path = window.location.pathname;
   var m = path.match(/tproduct[\/\-](\d{10,})/);
-  return m ? m[1] : null;
+  if (m) return m[1];
+
+  var popup =
+    document.querySelector('.t-store__prod-popup') ||
+    document.querySelector('.t-popup_show .t-store__prod-popup') ||
+    document.querySelector('.t-store__prod-popup__content');
+
+  if (popup) {
+    var uid =
+      popup.getAttribute('data-product-gen-uid') ||
+      popup.dataset.productGenUid;
+
+    if (uid) return uid;
+
+    var hiddenUidEl = popup.querySelector('[data-product-gen-uid]');
+    if (hiddenUidEl) return hiddenUidEl.getAttribute('data-product-gen-uid');
+  }
+
+  return null;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -144,18 +163,15 @@ function rwGetUidFromPath(path) {
   catObs.observe(document.body, { childList: true, subtree: true });
 
   // Сторінка товару — перевіряємо поточний URL і слідкуємо за змінами
-  var lastPath = '';
+var lastUid = '';
 
-  function checkAndInit() {
-    var path = window.location.pathname;
-    if (path === lastPath) return;
-    lastPath = path;
+function checkAndInit() {
+  var uid = rwGetCurrentProductUid();
+  if (!uid || uid === lastUid) return;
 
-    var uid = rwGetUidFromPath(path);
-    if (uid) {
-      rwInitProductRating(uid);
-    }
-  }
+  lastUid = uid;
+  rwInitProductRating(uid);
+}
 
   // Перевіряємо одразу
   checkAndInit();
