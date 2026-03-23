@@ -100,12 +100,36 @@ function rwInitProductRating(uid) {
     titleEl.parentNode.insertBefore(wrap, titleEl);
 
     rwFetchRating(uid, function(data) {
-      if (!data) { wrap.style.display = 'none'; return; }
-      wrap.innerHTML =
-        rwStarsHtml(data.avg, RW_CATALOG_CONFIG.starSize_product) +
-        '<strong style="color:#111;font-weight:500;">' + data.avg.toFixed(1) + '</strong>' +
-        '<span style="color:#AAA;font-size:12px;">(' + data.count + ' відгуків)</span>';
-    });
+  if (!data) {
+    wrap.innerHTML =
+      rwStarsHtml(0, RW_CATALOG_CONFIG.starSize_product) +
+      '<strong style="color:#111;font-weight:500;">Ще немає відгуків</strong>' +
+      '<span style="color:#AAA;font-size:12px;text-decoration:underline;">Залишити перший</span>';
+
+    wrap.addEventListener('click', function() {
+      var widget = document.getElementById('reviews-widget');
+      if (widget) {
+        widget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        setTimeout(function() {
+          var formWrap = document.getElementById('rw-form-wrap');
+          var btnWrite = document.getElementById('btn-write');
+          if (formWrap && !formWrap.classList.contains('open')) {
+            formWrap.classList.add('open');
+            if (btnWrite) btnWrite.textContent = '− Скасувати';
+          }
+        }, 500);
+      }
+    }, { once: true });
+
+    return;
+  }
+
+  wrap.innerHTML =
+    rwStarsHtml(data.avg, RW_CATALOG_CONFIG.starSize_product) +
+    '<strong style="color:#111;font-weight:500;">' + data.avg.toFixed(1) + '</strong>' +
+    '<span style="color:#AAA;font-size:12px;">(' + data.count + ' відгуків)</span>';
+});
 
     return true;
   }
