@@ -91,33 +91,28 @@ var RW_CATALOG_CONFIG = {
 
     // Завантажуємо середній рейтинг для всіх потрібних slug одним запитом
     var filter = toLoad.map(function (s) { return 'product_id=eq.' + encodeURIComponent(s); }).join(',');
-    // Шукаємо по числовому uid який міститься в product_id slug
-    var uidFilter = toLoad.map(function(uid) { return 'product_id=like.*' + uid + '*'; }).join(',');
-    fetch(BASE + '/reviews?or=(' + uidFilter + ')&approved=eq.true&select=product_id,rating', { headers: H })
+    // Завантажуємо кожен uid окремим запитом
+    var fetchPromises = toLoad.map(function(uid) {
+      return fetch(BASE + '/reviews?product_id=like.*' + uid + '*&approved=eq.true&select=product_id,rating', { headers: H })
+        .then(function(r) { return r.json(); })
+        .then(function(rows) { return { uid: uid, rows: rows }; })
+        .catch(function() { return { uid: uid, rows: [] }; });
+    });
+    Promise.all(fetchPromises)
       .then(function (r) { return r.json(); })
-      .then(function (rows) {
-        // Групуємо — знаходимо який uid міститься в product_id
-        var groups = {};
-        rows.forEach(function (r) {
-          toLoad.forEach(function(uid) {
-            if (r.product_id.indexOf(uid) !== -1) {
-              if (!groups[uid]) groups[uid] = [];
-              groups[uid].push(r.rating);
-            }
-          });
-        });
-        toLoad.forEach(function (uid) {
-          var ratings = groups[uid] || [];
-          if (ratings.length) {
-            var avg = ratings.reduce(function (s, v) { return s + v; }, 0) / ratings.length;
-            cache[uid] = { avg: avg, total: ratings.length };
+      .then(function(results) {
+        results.forEach(function(result) {
+          var uid = result.uid;
+          var rows = result.rows;
+          if (rows && rows.length) {
+            var total = rows.reduce(function(s, r) { return s + (r.rating || 0); }, 0);
+            cache[uid] = { avg: total / rows.length, total: rows.length };
           } else {
             cache[uid] = null;
           }
         });
         applyRatings(cards);
-      })
-      .catch(function () { /* тихо ігноруємо помилку мережі */ });
+      });
   }
 
   /* ── Вставити рейтинг у картку ──────── */
