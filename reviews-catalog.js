@@ -112,7 +112,7 @@ function rwInitProductRating(uid) {
   wrap.innerHTML =
     rwStarsHtml(data.avg, RW_CATALOG_CONFIG.starSize_product) +
     '<strong style="color:#9E9E9E;font-weight:400;font-size:13px;">' + data.avg.toFixed(1) + '</strong>' +
-    '<span style="color:#7A5A2F;font-size:13px;text-decoration:underline;text-underline-offset:2px;">' + data.count + ' відгуків ↓</span>';
+    '<span style="color:#000000;font-size:13px;text-decoration:underline;text-underline-offset:2px;">' + data.count + ' відгуків ↓</span>';
 });
 
     return true;
