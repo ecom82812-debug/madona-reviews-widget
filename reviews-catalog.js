@@ -9,7 +9,7 @@ var RW_CATALOG_CONFIG = {
   supabaseUrl:  'https://pjbkmajnbqabkunlikoe.supabase.co',
   supabaseAnon: 'sb_publishable_UXLaCY899UlouOFe_7xG7Q_b8KreJ85',
   starSize_catalog: 14,
-  starSize_product: 20,
+  starSize_product: 16,
 };
 
 var RW_BASE = RW_CATALOG_CONFIG.supabaseUrl + '/rest/v1';
