@@ -1,15 +1,13 @@
 /*
- * reviews-catalog.js
- * Підключається глобально через Site Settings → Custom Code → Body
- * 1. Рейтинг під кожною карткою в каталозі
- * 2. Рейтинг біля назви товару на сторінці товару
+ * reviews-catalog.js v2 — ОПТИМІЗОВАНИЙ
+ * Один пакетний запит замість N окремих
  */
 
 var RW_CATALOG_CONFIG = {
   supabaseUrl:  'https://pjbkmajnbqabkunlikoe.supabase.co',
   supabaseAnon: 'sb_publishable_UXLaCY899UlouOFe_7xG7Q_b8KreJ85',
-  starSize_catalog: 14,
-  starSize_product: 16,
+  starSize_catalog: window.innerWidth <= 768 ? 12 : 14,
+  starSize_product: window.innerWidth <= 768 ? 16 : 20,
 };
 
 var RW_BASE = RW_CATALOG_CONFIG.supabaseUrl + '/rest/v1';
@@ -27,61 +25,80 @@ function rwStarsHtml(avg, size) {
   return html + '</span>';
 }
 
-// ── Завантажити рейтинг ─────────────────────────────────────
-function rwFetchRating(uid, callback) {
-  fetch(RW_BASE + '/reviews?product_id=like.*' + uid + '*&approved=eq.true&select=rating', {
+// ══════════════════════════════════════════════════════════
+// 1. КАТАЛОГ — ОДИН ПАКЕТНИЙ ЗАПИТ ДЛЯ ВСІХ КАРТОК
+// ══════════════════════════════════════════════════════════
+function rwRenderCatalog() {
+  var cards = document.querySelectorAll('.t-store__card[data-product-gen-uid]:not([data-rw-done])');
+  if (!cards.length) return;
+
+  // Збираємо всі uid
+  var uids = [];
+  cards.forEach(function(card) {
+    var uid = card.getAttribute('data-product-gen-uid');
+    if (uid) {
+      card.dataset.rwDone = '1';
+      uids.push(uid);
+    }
+  });
+  if (!uids.length) return;
+
+  // ОДИН запит для всіх uid через OR фільтр
+  var orFilter = uids.map(function(uid) {
+    return 'product_id.like.*' + uid + '*';
+  }).join(',');
+
+  fetch(RW_BASE + '/reviews?or=(' + orFilter + ')&approved=eq.true&select=product_id,rating', {
     headers: { 'apikey': RW_KEY, 'Authorization': 'Bearer ' + RW_KEY }
   })
   .then(function(r) { return r.json(); })
   .then(function(rows) {
-    if (!rows || !rows.length) { callback(null); return; }
-    var total = rows.reduce(function(s, r) { return s + (r.rating || 0); }, 0);
-    callback({ avg: total / rows.length, count: rows.length });
+    if (!rows || !Array.isArray(rows)) return;
+
+    // Групуємо по uid
+    var groups = {};
+    rows.forEach(function(r) {
+      uids.forEach(function(uid) {
+        if (r.product_id && r.product_id.indexOf(uid) !== -1) {
+          if (!groups[uid]) groups[uid] = [];
+          groups[uid].push(r.rating);
+        }
+      });
+    });
+
+    // Вставляємо рейтинг у кожну картку
+    var size = RW_CATALOG_CONFIG.starSize_catalog;
+    cards.forEach(function(card) {
+      var uid = card.getAttribute('data-product-gen-uid');
+      var ratings = groups[uid];
+      if (!ratings || !ratings.length) return;
+
+      var avg = ratings.reduce(function(s, v) { return s + v; }, 0) / ratings.length;
+
+      var el = document.createElement('div');
+      el.className = 'rw-catalog-rating';
+      el.style.cssText = 'display:flex;align-items:center;gap:5px;font-family:inherit;font-size:12px;color:#666;margin:4px 0;';
+      el.innerHTML = rwStarsHtml(avg, size) +
+        '<strong style="color:#111;font-weight:500;">' + avg.toFixed(1) + '</strong>' +
+        '<span style="color:#AAA;font-size:11px;">(' + ratings.length + ')</span>';
+
+      var insertAfter = card.querySelector(
+        '.t-store__card__title, .t-store__card-title, .js-store-prod-name, [class*="title"], h3, h2'
+      );
+      if (insertAfter && insertAfter.parentNode) {
+        insertAfter.parentNode.insertBefore(el, insertAfter.nextSibling);
+      } else {
+        card.appendChild(el);
+      }
+    });
   })
-  .catch(function() { callback(null); });
-}
-
-// ══════════════════════════════════════════════════════════
-// 1. РЕЙТИНГ В КАТАЛОЗІ
-// ══════════════════════════════════════════════════════════
-function rwProcessCard(card, uid) {
-  if (card.dataset.rwDone) return;
-  card.dataset.rwDone = '1';
-
-  rwFetchRating(uid, function(data) {
-    if (!data) return;
-
-    var el = document.createElement('div');
-    el.className = 'rw-catalog-rating';
-    el.style.cssText = 'display:flex;align-items:center;gap:5px;font-family:inherit;font-size:12px;color:#666;margin:4px 0;';
-    el.innerHTML = rwStarsHtml(data.avg, RW_CATALOG_CONFIG.starSize_catalog) +
-      '<strong style="color:#111;font-weight:500;">' + data.avg.toFixed(1) + '</strong>' +
-      '<span style="color:#AAA;font-size:11px;">(' + data.count + ')</span>';
-
-    var insertAfter = card.querySelector(
-      '.t-store__card__title, .t-store__card-title, .js-store-prod-name, [class*="title"], h3, h2'
-    );
-    if (insertAfter && insertAfter.parentNode) {
-      insertAfter.parentNode.insertBefore(el, insertAfter.nextSibling);
-    } else {
-      card.appendChild(el);
-    }
-  });
-}
-
-function rwRenderCatalog() {
-  var cards = document.querySelectorAll('.t-store__card[data-product-gen-uid]');
-  cards.forEach(function(card) {
-    var uid = card.getAttribute('data-product-gen-uid');
-    if (uid) rwProcessCard(card, uid);
-  });
+  .catch(function() {});
 }
 
 // ══════════════════════════════════════════════════════════
 // 2. РЕЙТИНГ НА СТОРІНЦІ ТОВАРУ
 // ══════════════════════════════════════════════════════════
 function rwInitProductRating(uid) {
-
   function tryInsert() {
     var titleEl = document.querySelector('.t-store__prod-popup__name, .js-store-prod-name');
     if (!titleEl) return false;
@@ -89,105 +106,78 @@ function rwInitProductRating(uid) {
 
     var wrap = document.createElement('div');
     wrap.id = 'rw-header-' + uid;
-    wrap.style.cssText = 'display:flex;align-items:center;gap:6px;font-family:inherit;font-size:13px;color:#666;margin:6px 0 10px;cursor:pointer;';
+    wrap.style.cssText = 'display:flex;align-items:center;gap:8px;font-family:inherit;font-size:13px;color:#666;margin:6px 0 10px;cursor:pointer;flex-wrap:wrap;';
     wrap.innerHTML = '<span style="width:80px;height:14px;background:#F0F0F0;display:inline-block;border-radius:2px;"></span>';
-
     wrap.addEventListener('click', function() {
       var widget = document.getElementById('reviews-widget');
       if (widget) widget.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-
     titleEl.parentNode.insertBefore(wrap, titleEl);
 
-    rwFetchRating(uid, function(data) {
-
-  if (!data || !data.count || data.count === 0) {
-    wrap.style.display = 'none';
-    return;
-  }
-
-  wrap.style.display = '';
-  wrap.style.cssText = 'display:flex;align-items:center;gap:8px;font-family:inherit;font-size:13px;color:#666;margin:6px 0 10px;cursor:pointer;flex-wrap:wrap;';
-
-  wrap.innerHTML =
-    rwStarsHtml(data.avg, RW_CATALOG_CONFIG.starSize_product) +
-    '<strong style="color:#9E9E9E;font-weight:400;font-size:13px;">' + data.avg.toFixed(1) + '</strong>' +
-    '<span style="color:#000000;font-size:13px;text-decoration:underline;text-underline-offset:2px;">' + data.count + ' відгуків ↓</span>';
-});
+    fetch(RW_BASE + '/reviews?product_id=like.*' + uid + '*&approved=eq.true&select=rating', {
+      headers: { 'apikey': RW_KEY, 'Authorization': 'Bearer ' + RW_KEY }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      if (!rows || !rows.length) { wrap.style.display = 'none'; return; }
+      var avg = rows.reduce(function(s, r) { return s + (r.rating || 0); }, 0) / rows.length;
+      var size = RW_CATALOG_CONFIG.starSize_product;
+      wrap.innerHTML =
+        rwStarsHtml(avg, size) +
+        '<strong style="color:#9E9E9E;font-weight:400;font-size:13px;">' + avg.toFixed(1) + '</strong>' +
+        '<span style="color:#000;font-size:13px;text-decoration:underline;text-underline-offset:2px;">' + rows.length + ' відгуків ↓</span>';
+    })
+    .catch(function() { wrap.style.display = 'none'; });
 
     return true;
   }
 
   if (!tryInsert()) {
-    var obs = new MutationObserver(function() {
-      if (tryInsert()) obs.disconnect();
-    });
+    var obs = new MutationObserver(function() { if (tryInsert()) obs.disconnect(); });
     obs.observe(document.body, { childList: true, subtree: true });
   }
-
   setTimeout(tryInsert, 500);
   setTimeout(tryInsert, 1500);
   setTimeout(tryInsert, 3000);
 }
 
-// ── Отримати UID з URL ──────────────────────────────────────
 function rwGetCurrentProductUid() {
-  var path = window.location.pathname;
-  var m = path.match(/tproduct[\/\-](\d{10,})/);
+  var m = window.location.pathname.match(/tproduct[\/\-](\d{10,})/);
   if (m) return m[1];
-
-  var popup =
-    document.querySelector('.t-store__prod-popup') ||
-    document.querySelector('.t-popup_show .t-store__prod-popup') ||
-    document.querySelector('.t-store__prod-popup__content');
-
+  var popup = document.querySelector('.t-store__prod-popup, .t-popup_show .t-store__prod-popup');
   if (popup) {
-    var uid =
-      popup.getAttribute('data-product-gen-uid') ||
-      popup.dataset.productGenUid;
-
+    var uid = popup.getAttribute('data-product-gen-uid') || popup.dataset.productGenUid;
     if (uid) return uid;
-
-    var hiddenUidEl = popup.querySelector('[data-product-gen-uid]');
-    if (hiddenUidEl) return hiddenUidEl.getAttribute('data-product-gen-uid');
+    var el = popup.querySelector('[data-product-gen-uid]');
+    if (el) return el.getAttribute('data-product-gen-uid');
   }
-
   return null;
 }
 
 // ══════════════════════════════════════════════════════════
-// СТАРТ + слідкуємо за зміною URL (Tilda AJAX навігація)
+// СТАРТ
 // ══════════════════════════════════════════════════════════
 (function() {
-  // Каталог
-  setTimeout(rwRenderCatalog, 1000);
-  setTimeout(rwRenderCatalog, 2500);
-  setTimeout(rwRenderCatalog, 5000);
+  // Каталог — затримка щоб Tilda встигла відрендерити картки
+  setTimeout(rwRenderCatalog, 1500);
+  setTimeout(rwRenderCatalog, 3500);
 
-  var catObs = new MutationObserver(function() {
+  // MutationObserver для нових карток
+  var obs = new MutationObserver(function() {
     var newCards = document.querySelectorAll('.t-store__card[data-product-gen-uid]:not([data-rw-done])');
     if (newCards.length) rwRenderCatalog();
   });
-  catObs.observe(document.body, { childList: true, subtree: true });
+  obs.observe(document.body, { childList: true, subtree: true });
 
-  // Сторінка товару — перевіряємо поточний URL і слідкуємо за змінами
-var lastUid = '';
-
-function checkAndInit() {
-  var uid = rwGetCurrentProductUid();
-  if (!uid || uid === lastUid) return;
-
-  lastUid = uid;
-  rwInitProductRating(uid);
-}
-
-  // Перевіряємо одразу
+  // Сторінка товару
+  var lastUid = '';
+  function checkAndInit() {
+    var uid = rwGetCurrentProductUid();
+    if (!uid || uid === lastUid) return;
+    lastUid = uid;
+    rwInitProductRating(uid);
+  }
   checkAndInit();
-
-  // Слідкуємо за навігацією
   window.addEventListener('popstate', checkAndInit);
-
-  // Tilda міняє URL без popstate — перевіряємо кожні 500мс
   setInterval(checkAndInit, 500);
-
 })();
