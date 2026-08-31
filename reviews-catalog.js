@@ -1,17 +1,9 @@
 /*
- * reviews-catalog.js v2 — ОПТИМІЗОВАНИЙ
- * Один пакетний запит замість N окремих
+ * reviews-catalog.js v3 — через Cloudflare Worker
+ * Ключ Supabase схований у Worker, не видимий в браузері
  */
 
-var RW_CATALOG_CONFIG = {
-  supabaseUrl:  'https://pjbkmajnbqabkunlikoe.supabase.co',
-  supabaseAnon: 'sb_publishable_UXLaCY899UlouOFe_7xG7Q_b8KreJ85',
-  starSize_catalog: window.innerWidth <= 768 ? 12 : 14,
-  starSize_product: window.innerWidth <= 768 ? 16 : 20,
-};
-
-var RW_BASE = RW_CATALOG_CONFIG.supabaseUrl + '/rest/v1';
-var RW_KEY  = RW_CATALOG_CONFIG.supabaseAnon;
+var RW_WORKER_URL = 'https://madona-reviews.hatsauck22.workers.dev/api';
 
 // ── Зірки SVG ──────────────────────────────────────────────
 function rwStarsHtml(avg, size) {
@@ -32,30 +24,22 @@ function rwRenderCatalog() {
   var cards = document.querySelectorAll('.t-store__card[data-product-gen-uid]:not([data-rw-done])');
   if (!cards.length) return;
 
-  // Збираємо всі uid
   var uids = [];
   cards.forEach(function(card) {
     var uid = card.getAttribute('data-product-gen-uid');
-    if (uid) {
-      card.dataset.rwDone = '1';
-      uids.push(uid);
-    }
+    if (uid) { card.dataset.rwDone = '1'; uids.push(uid); }
   });
   if (!uids.length) return;
 
-  // ОДИН запит для всіх uid через OR фільтр
   var orFilter = uids.map(function(uid) {
     return 'product_id.like.*' + uid + '*';
   }).join(',');
 
-  fetch(RW_BASE + '/reviews?or=(' + orFilter + ')&approved=eq.true&select=product_id,rating', {
-    headers: { 'apikey': RW_KEY, 'Authorization': 'Bearer ' + RW_KEY }
-  })
+  fetch(RW_WORKER_URL + '/reviews?or=(' + orFilter + ')&approved=eq.true&select=product_id,rating')
   .then(function(r) { return r.json(); })
   .then(function(rows) {
     if (!rows || !Array.isArray(rows)) return;
 
-    // Групуємо по uid
     var groups = {};
     rows.forEach(function(r) {
       uids.forEach(function(uid) {
@@ -66,8 +50,7 @@ function rwRenderCatalog() {
       });
     });
 
-    // Вставляємо рейтинг у кожну картку
-    var size = RW_CATALOG_CONFIG.starSize_catalog;
+    var size = window.innerWidth <= 768 ? 12 : 14;
     cards.forEach(function(card) {
       var uid = card.getAttribute('data-product-gen-uid');
       var ratings = groups[uid];
@@ -114,14 +97,12 @@ function rwInitProductRating(uid) {
     });
     titleEl.parentNode.insertBefore(wrap, titleEl);
 
-    fetch(RW_BASE + '/reviews?product_id=like.*' + uid + '*&approved=eq.true&select=rating', {
-      headers: { 'apikey': RW_KEY, 'Authorization': 'Bearer ' + RW_KEY }
-    })
+    fetch(RW_WORKER_URL + '/reviews?product_id=like.*' + uid + '*&approved=eq.true&select=rating')
     .then(function(r) { return r.json(); })
     .then(function(rows) {
       if (!rows || !rows.length) { wrap.style.display = 'none'; return; }
       var avg = rows.reduce(function(s, r) { return s + (r.rating || 0); }, 0) / rows.length;
-      var size = RW_CATALOG_CONFIG.starSize_product;
+      var size = window.innerWidth <= 768 ? 16 : 20;
       wrap.innerHTML =
         rwStarsHtml(avg, size) +
         '<strong style="color:#9E9E9E;font-weight:400;font-size:13px;">' + avg.toFixed(1) + '</strong>' +
@@ -158,18 +139,15 @@ function rwGetCurrentProductUid() {
 // СТАРТ
 // ══════════════════════════════════════════════════════════
 (function() {
-  // Каталог — затримка щоб Tilda встигла відрендерити картки
   setTimeout(rwRenderCatalog, 1500);
   setTimeout(rwRenderCatalog, 3500);
 
-  // MutationObserver для нових карток
   var obs = new MutationObserver(function() {
     var newCards = document.querySelectorAll('.t-store__card[data-product-gen-uid]:not([data-rw-done])');
     if (newCards.length) rwRenderCatalog();
   });
   obs.observe(document.body, { childList: true, subtree: true });
 
-  // Сторінка товару
   var lastUid = '';
   function checkAndInit() {
     var uid = rwGetCurrentProductUid();
