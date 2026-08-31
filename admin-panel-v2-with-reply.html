@@ -368,12 +368,6 @@ body { background: #F4F2EF; color: var(--ink); font-family: var(--ff); font-weig
         <small style="color:var(--muted);font-size:10px;text-align:right;font-family:var(--ff)" id="m-char">0 / 1400</small>
       </div>
 
-      <!-- ВІДПОВІДЬ МАГАЗИНУ -->
-      <div class="mf">
-        <label>Відповідь магазину</label>
-        <textarea id="m-reply" placeholder="Напишіть відповідь клієнту…" style="min-height:100px"></textarea>
-      </div>
-
       <!-- ПІДТВЕРДЖЕНА ПОКУПКА -->
       <div class="mf" style="flex-direction:row;align-items:center;gap:12px">
         <input type="checkbox" id="m-verified" style="width:15px;height:15px;accent-color:var(--ink);cursor:pointer;flex-shrink:0">
@@ -408,9 +402,8 @@ body { background: #F4F2EF; color: var(--ink); font-family: var(--ff); font-weig
 /* ══════════════════════════════════════════
    ⚙️  КОНФІГУРАЦІЯ
 ══════════════════════════════════════════ */
-const SUPABASE_URL  = 'https://pjbkmajnbqabkunlikoe.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_UXLaCY899UlouOFe_7xG7Q_b8KreJ85';
-const ADMIN_PASS    = 'admin1234';                             // ← змінити пароль!
+const WORKER_URL    = 'https://madona-reviews.hatsauck22.workers.dev/api';
+const ADMIN_PASS    = 'admin1234';
 const PAGE_SIZE     = 15;
 
 /* ══════════════════════════════════════════
@@ -438,29 +431,27 @@ if (sessionStorage.getItem('adm')==='1') {
 /* ══════════════════════════════════════════
    API
 ══════════════════════════════════════════ */
-const H = () => ({
-  'Content-Type':'application/json',
-  'apikey': SUPABASE_ANON,
-  'Authorization': `Bearer ${SUPABASE_ANON}`,
-  'Prefer':'return=representation,count=exact',
-});
-
 async function sbGet(path) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: H() });
+  const r = await fetch(`${WORKER_URL}/${path}`, {
+    headers: { 'Prefer': 'return=representation,count=exact' }
+  });
   if (!r.ok) throw new Error(await r.text());
   const data = await r.json();
   const total = r.headers.get('content-range')?.split('/')[1];
   return { data, total: total ? +total : data.length };
 }
 async function sbPatch(path, body) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    method:'PATCH', headers:{...H(),'Prefer':'return=minimal'}, body:JSON.stringify(body)
+  const r = await fetch(`${WORKER_URL}/${path}`, {
+    method:'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify(body)
   });
   if (!r.ok) throw new Error(await r.text());
 }
 async function sbDelete(path) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    method:'DELETE', headers:{...H(),'Prefer':'return=minimal'}
+  const r = await fetch(`${WORKER_URL}/${path}`, {
+    method:'DELETE',
+    headers: { 'Prefer': 'return=minimal' }
   });
   if (!r.ok) throw new Error(await r.text());
 }
@@ -682,7 +673,6 @@ function openEdit(id) {
   document.getElementById('m-name').value    = r.author_name || '';
   document.getElementById('m-title').value   = r.title || '';
   document.getElementById('m-body').value    = r.body || '';
-  document.getElementById('m-reply').value   = r.reply_text || '';
   document.getElementById('m-product').value = r.product_id || '';
   document.getElementById('m-fit').value     = r.size_fit || '';
   document.getElementById('m-verified').checked = !!r.verified;
@@ -750,8 +740,6 @@ async function saveEdit() {
     const dateVal = document.getElementById('m-date').value;
     const isoDate = dateVal ? new Date(dateVal).toISOString() : undefined;
 
-    const replyText = document.getElementById('m-reply').value.trim();
-
     const payload = {
       author_name: name,
       body,
@@ -759,8 +747,6 @@ async function saveEdit() {
       product_id: document.getElementById('m-product').value.trim(),
       size_fit: document.getElementById('m-fit').value || null,
       verified: document.getElementById('m-verified').checked,
-      reply_text: replyText || null,
-      reply_date: replyText ? new Date().toISOString() : null,
       ...(rEl ? { rating: +rEl.value } : {}),
       ...(isoDate ? { created_at: isoDate } : {}),
     };
