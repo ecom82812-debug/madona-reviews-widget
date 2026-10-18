@@ -4,7 +4,7 @@
  */
 
 var RW_WORKER_URL = 'https://madona-reviews.hatsauck22.workers.dev/api';
-var RW_KEY = 'sb_publishable_ZGGrztF1NG0yYDzh6YudHA_10vfmz7D';
+var RW_KEY = 'sb_publishable_KhFqGBxak9n2XQlTk3rH0Q__KkDdL2o';
 
 // ── Зірки SVG ──────────────────────────────────────────────
 function rwStarsHtml(avg, size) {
@@ -36,7 +36,7 @@ function rwRenderCatalog() {
     return 'product_id.like.*' + uid + '*';
   }).join(',');
 
-  fetch('https://pjbkmajnbqabkunlikoe.supabase.co/rest/v1/reviews?or=(' + orFilter + ')&approved=eq.true&select=product_id,rating', { headers: { 'apikey': 'sb_publishable_ZGGrztF1NG0yYDzh6YudHA_10vfmz7D', 'Authorization': 'Bearer sb_publishable_ZGGrztF1NG0yYDzh6YudHA_10vfmz7D' } })
+  fetch('https://pjbkmajnbqabkunlikoe.supabase.co/rest/v1/reviews?or=(' + orFilter + ')&approved=eq.true&select=product_id,rating', { headers: { 'apikey': 'sb_publishable_KhFqGBxak9n2XQlTk3rH0Q__KkDdL2o', 'Authorization': 'Bearer sb_publishable_KhFqGBxak9n2XQlTk3rH0Q__KkDdL2o' } })
   .then(function(r) { return r.json(); })
   .then(function(rows) {
     if (!rows || !Array.isArray(rows)) return;
@@ -98,7 +98,7 @@ function rwInitProductRating(uid) {
     });
     titleEl.parentNode.insertBefore(wrap, titleEl);
 
-    fetch('https://pjbkmajnbqabkunlikoe.supabase.co/rest/v1/reviews?product_id=like.*' + uid + '*&approved=eq.true&select=rating', { headers: { 'apikey': 'sb_publishable_ZGGrztF1NG0yYDzh6YudHA_10vfmz7D', 'Authorization': 'Bearer sb_publishable_ZGGrztF1NG0yYDzh6YudHA_10vfmz7D' } })
+    fetch('https://pjbkmajnbqabkunlikoe.supabase.co/rest/v1/reviews?product_id=like.*' + uid + '*&approved=eq.true&select=rating', { headers: { 'apikey': 'sb_publishable_KhFqGBxak9n2XQlTk3rH0Q__KkDdL2o', 'Authorization': 'Bearer sb_publishable_KhFqGBxak9n2XQlTk3rH0Q__KkDdL2o' } })
     .then(function(r) { return r.json(); })
     .then(function(rows) {
       if (!rows || !rows.length) { wrap.style.display = 'none'; return; }
