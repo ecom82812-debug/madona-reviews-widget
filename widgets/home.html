@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Відгуки покупців</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  color: #111;
+  -webkit-font-smoothing: antialiased;
+}
+
+.rh {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 72px 40px 96px;
+}
+
+/* ── ШАПКА ─────────────────────────── */
+.rh-head {
+  padding-bottom: 24px;
+  border-bottom: 1px solid #111;
+  margin-bottom: 0;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.rh-head::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 48px; height: 2px;
+  background: #111;
+}
+.rh-kicker {
+  font-size: 9px; letter-spacing: .22em; text-transform: uppercase;
+  color: #AAA; margin-bottom: 8px;
+}
+.rh-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: clamp(28px, 3.5vw, 44px);
+  font-weight: 400; line-height: 1.1;
+}
+.rh-title em { font-style: italic; }
+
+/* Рейтинг у шапці */
+.rh-score { text-align: right; flex-shrink: 0; }
+.rh-score-num {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 56px; font-weight: 700;
+  line-height: 1; letter-spacing: -.04em;
+}
+.rh-score-stars { display: flex; gap: 2px; justify-content: flex-end; margin: 4px 0 2px; }
+.rh-star { width: 12px; height: 12px; fill: #111; }
+.rh-star.e { fill: #E0E0E0; }
+.rh-score-cnt { font-size: 11px; color: #AAA; letter-spacing: .1em; }
+
+/* ── СПИСОК ─────────────────────────── */
+.rh-list { display: flex; flex-direction: column; }
+
+.rh-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 48px;
+  padding: 36px 0;
+  border-bottom: 1px solid #F0F0F0;
+  align-items: start;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: rowIn .4s forwards;
+}
+.rh-row:nth-child(1) { animation-delay: .04s; }
+.rh-row:nth-child(2) { animation-delay: .08s; }
+.rh-row:nth-child(3) { animation-delay: .12s; }
+.rh-row:nth-child(n+4) { animation-delay: .16s; }
+@keyframes rowIn { to { opacity: 1; transform: translateY(0); } }
+
+/* Ліва колонка */
+.rh-left { }
+.rh-name {
+  font-size: 15px; font-weight: 400; color: #111;
+  margin-bottom: 4px;
+}
+.rh-date {
+  font-size: 10px; color: #BBB; letter-spacing: .06em;
+  margin-bottom: 10px;
+}
+.rh-stars { display: flex; gap: 2px; margin-bottom: 10px; }
+.rh-cstar { width: 11px; height: 11px; fill: #111; }
+.rh-cstar.e { fill: #E0E0E0; }
+
+/* Тег товару */
+.rh-product-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #666;
+  background: #F5F5F5;
+  padding: 5px 12px;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+  cursor: pointer;
+  max-width: 200px;
+  white-space: normal;
+  line-height: 1.3;
+}
+.rh-product-tag:hover { background: #111; color: #fff; }
+
+/* Права колонка */
+.rh-right { }
+.rh-rtitle {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 18px; /* ← ДЕСКТОП: розмір заголовку відгуку */
+  font-style: italic; font-weight: 400;
+  color: #111; margin-bottom: 10px; line-height: 1.3;
+}
+.rh-rtext {
+  font-size: 14px; /* ← ДЕСКТОП: розмір тексту відгуку */
+  color: #666; line-height: 1.8; font-weight: 300;
+}
+
+/* Відповідь магазину */
+.rh-reply {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #F7F5F2;
+  border-left: 2px solid #111;
+}
+.rh-reply-label {
+  font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+  font-weight: 500; color: #111; margin-bottom: 4px;
+}
+.rh-reply-text {
+  font-size: 12px; color: #555; line-height: 1.6; font-weight: 300;
+}
+
+/* Фото */
+.rh-photos {
+  display: flex; gap: 6px; margin-top: 12px;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.rh-photos::-webkit-scrollbar { display: none; }
+.rh-photo {
+  width: 64px; height: 80px; object-fit: cover;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  cursor: pointer; transition: opacity .2s;
+}
+.rh-photo:hover { opacity: .8; }
+
+/* ── ЗАВАНТАЖИТИ ЩЕ ──────────────────── */
+.rh-more {
+  text-align: center;
+  margin-top: 32px;
+}
+.rh-more-btn {
+  padding: 11px 48px;
+  border: 1px solid #E0E0E0;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px; font-weight: 400; letter-spacing: .16em; text-transform: uppercase;
+  color: #888; cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+.rh-more-btn:hover { border-color: #111; color: #111; }
+
+/* ── LOADING / EMPTY ─────────────────── */
+.rh-loading { display: flex; justify-content: center; padding: 60px 0; }
+.rh-spinner {
+  width: 20px; height: 20px;
+  border: 1px solid #E0E0E0; border-top-color: #111;
+  border-radius: 50%; animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.rh-empty {
+  text-align: center; padding: 60px 0;
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic; font-size: 18px; color: #CCC;
+}
+
+/* ── LIGHTBOX ────────────────────────── */
+.rh-lb {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.92);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.rh-lb.open { opacity: 1; pointer-events: all; }
+.rh-lb img { max-width: 80vw; max-height: 85vh; object-fit: contain; }
+.rh-lb-close {
+  position: absolute; top: 16px; right: 20px;
+  font-size: 22px; background: none; border: none;
+  color: #888; cursor: pointer; transition: color .2s;
+}
+.rh-lb-close:hover { color: #fff; }
+.rh-lb-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,.1); border: none; color: #fff;
+  font-size: 28px; cursor: pointer; padding: 16px 20px; line-height: 1;
+  transition: background .2s;
+}
+.rh-lb-arrow:hover { background: rgba(255,255,255,.2); }
+.rh-lb-prev { left: 12px; }
+.rh-lb-next { right: 12px; }
+.rh-lb-arrow.hidden { display: none; }
+.rh-lb-counter {
+  position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+  font-size: 12px; color: rgba(255,255,255,.5);
+  font-family: 'DM Sans', sans-serif; letter-spacing: .1em;
+}
+
+/* ── АДАПТИВ ─────────────────────────── */
+@media (max-width: 600px) {
+  .rh { padding: 40px 20px 60px; }
+  .rh-head { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .rh-score { text-align: left; }
+  .rh-score-stars { justify-content: flex-start; }
+  .rh-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 20px 0;
+  }
+  .rh-left {
+    display: flex; flex-wrap: wrap;
+    align-items: center; gap: 8px;
+  }
+  .rh-date { margin-bottom: 0; }
+  .rh-stars { margin-bottom: 0; }
+  .rh-product-tag { max-width: 100%; }
+  .rh-rtitle { font-size: 16px; }
+  .rh-rtext  { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="rh" id="rh-root">
+
+  <div class="rh-head">
+    <div>
+      <div class="rh-kicker">Відгуки покупців</div>
+      <div class="rh-title">Що кажуть про <em>нас</em></div>
+    </div>
+    <div class="rh-score" id="rh-score" style="display:none">
+      <div class="rh-score-num" id="rh-score-num">—</div>
+      <div class="rh-score-stars" id="rh-score-stars"></div>
+      <div class="rh-score-cnt" id="rh-score-cnt"></div>
+    </div>
+  </div>
+
+  <div class="rh-list" id="rh-list">
+    <div class="rh-loading"><div class="rh-spinner"></div></div>
+  </div>
+
+  <div class="rh-more" id="rh-more" style="display:none">
+    <button class="rh-more-btn" id="rh-more-btn">Більше відгуків</button>
+  </div>
+
+</div>
+
+<div class="rh-lb" id="rh-lb" onclick="rhCloseLb(event)">
+  <button class="rh-lb-close" onclick="rhCloseLb()">✕</button>
+  <button class="rh-lb-arrow rh-lb-prev" id="rh-lb-prev" onclick="rhLbNav(-1);event.stopPropagation()">‹</button>
+  <img id="rh-lb-img" src="" alt="">
+  <button class="rh-lb-arrow rh-lb-next" id="rh-lb-next" onclick="rhLbNav(1);event.stopPropagation()">›</button>
+  <span class="rh-lb-counter" id="rh-lb-counter"></span>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   КОНФІГУРАЦІЯ — ключів немає, лише API магазину
+══════════════════════════════════════ */
+const RH_API    = 'https://pjbkmajnbqabkunlikoe.supabase.co/functions/v1/reviews-api';
+const PAGE_SIZE = 6;
+const RH_TTL    = 10 * 60 * 1000;
+
+async function rhApi(qs) {
+  const key = 'rw:' + qs;
+  let c = null;
+  try { c = JSON.parse(localStorage.getItem(key) || 'null'); } catch {}
+  if (c && Date.now() - c.t < RH_TTL) return c.d;
+  try {
+    const r = await fetch(RH_API + '?' + qs);
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), d })); } catch {}
+    return d;
+  } catch (e) { if (c) return c.d; throw e; }
+}
+
+/* ══════════════════════════════════════
+   СТАН
+══════════════════════════════════════ */
+let st = { reviews: [], offset: 0, hasMore: false };
+
+/* ══════════════════════════════════════
+   HELPERS
+══════════════════════════════════════ */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtD = iso => new Date(iso).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
+
+function starsHtml(n, cls, size) {
+  return Array.from({length:5}, (_,i) =>
+    `<svg class="${cls}${i<n?'':' e'}" width="${size}" height="${size}" viewBox="0 0 24 24">` +
+    `<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
+  ).join('');
+}
+
+/* ══════════════════════════════════════
+   ГЛОБАЛЬНИЙ РЕЙТИНГ
+══════════════════════════════════════ */
+function applyStats(d) {
+  if (!d?.count) return;
+  const avg = (+d.avg).toFixed(1);
+  document.getElementById('rh-score-num').textContent = avg;
+  document.getElementById('rh-score-stars').innerHTML = starsHtml(Math.round(+avg), 'rh-star', 12);
+  document.getElementById('rh-score-cnt').textContent = d.count + ' відгуків';
+  document.getElementById('rh-score').style.display = '';
+}
+
+/* ══════════════════════════════════════
+   ЗАВАНТАЖЕННЯ
+══════════════════════════════════════ */
+async function load(reset) {
+  if (reset) { st.offset = 0; st.reviews = []; }
+
+  try {
+    const d = await rhApi('a=latest&limit=' + PAGE_SIZE + '&offset=' + st.offset);
+    if (d.stats) applyStats(d.stats);
+    st.hasMore = !!d.more;
+    const page = d.items || [];
+
+    st.offset += page.length;
+    if (reset) {
+      st.reviews = page;
+      render(page, true);
+    } else {
+      st.reviews = [...st.reviews, ...page];
+      render(page, false);
+    }
+
+    const moreBtn = document.getElementById('rh-more-btn');
+    moreBtn.textContent = 'Більше відгуків';
+    document.getElementById('rh-more').style.display = st.hasMore ? 'block' : 'none';
+  } catch(e) {
+    document.getElementById('rh-list').innerHTML =
+      '<p style="text-align:center;color:#A04040;padding:40px">Помилка завантаження</p>';
+  }
+}
+
+/* ══════════════════════════════════════
+   РЕНДЕР
+══════════════════════════════════════ */
+function render(page, reset) {
+  const list = document.getElementById('rh-list');
+  if (!page.length && reset) {
+    list.innerHTML = '<div class="rh-empty">Відгуків поки немає</div>';
+    return;
+  }
+
+  const html = page.map(r => {
+    const photos = (r.photos || []).map((p, i) =>
+      `<img class="rh-photo" src="${esc(p.t || p.u)}" loading="lazy" decoding="async" alt="Фото покупця" data-full="${esc(p.u)}" data-idx="${i}" data-rid="${esc(r.id)}" onclick="rhOpenLb(this)">`
+    ).join('');
+
+    const productHtml = (r.product_name || r.product_url) ? (() => {
+      const name = r.product_name || 'Переглянути товар';
+      const url  = r.product_url || '#';
+      return `<a class="rh-product-tag" href="${esc(url)}" target="_parent">${esc(name)} →</a>`;
+    })() : '';
+
+    const replyHtml = r.reply_text
+      ? `<div class="rh-reply"><div class="rh-reply-label">Магазин</div><div class="rh-reply-text">${esc(r.reply_text)}</div></div>`
+      : '';
+
+    return `<div class="rh-row">
+      <div class="rh-left">
+        <div class="rh-name">${esc(r.author_name)}</div>
+        <div class="rh-date">${fmtD(r.created_at)}</div>
+        <div class="rh-stars">${starsHtml(r.rating, 'rh-cstar', 11)}</div>
+        ${productHtml}
+      </div>
+      <div class="rh-right">
+        ${r.title ? `<div class="rh-rtitle">${esc(r.title)}</div>` : ''}
+        <div class="rh-rtext">${esc(r.body)}</div>
+        ${photos ? `<div class="rh-photos">${photos}</div>` : ''}
+        ${replyHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  if (reset) {
+    list.innerHTML = html;
+  } else {
+    list.insertAdjacentHTML('beforeend', html);
+  }
+}
+
+/* ══════════════════════════════════════
+   LIGHTBOX
+══════════════════════════════════════ */
+let lbPhotos = [], lbIdx = 0;
+
+function rhOpenLb(imgEl) {
+  const rid = imgEl.dataset.rid;
+  const all = Array.from(document.querySelectorAll(`.rh-photo[data-rid="${rid}"]`));
+  lbPhotos = all.map(el => el.dataset.full || el.src);
+  lbIdx = parseInt(imgEl.dataset.idx) || 0;
+  rhLbRender();
+  document.getElementById('rh-lb').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function rhLbRender() {
+  document.getElementById('rh-lb-img').src = lbPhotos[lbIdx];
+  const counter = document.getElementById('rh-lb-counter');
+  const prev = document.getElementById('rh-lb-prev');
+  const next = document.getElementById('rh-lb-next');
+  counter.textContent = lbPhotos.length > 1 ? (lbIdx + 1) + ' / ' + lbPhotos.length : '';
+  prev.classList.toggle('hidden', lbPhotos.length <= 1);
+  next.classList.toggle('hidden', lbPhotos.length <= 1);
+}
+
+function rhLbNav(dir) {
+  lbIdx = (lbIdx + dir + lbPhotos.length) % lbPhotos.length;
+  rhLbRender();
+}
+
+function rhCloseLb(e) {
+  if (e && e.target !== document.getElementById('rh-lb') && !e.target.classList.contains('rh-lb-close')) return;
+  document.getElementById('rh-lb').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+let lbTouchX = 0;
+document.getElementById('rh-lb').addEventListener('touchstart', e => { lbTouchX = e.touches[0].clientX; }, { passive: true });
+document.getElementById('rh-lb').addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - lbTouchX;
+  if (Math.abs(dx) > 40 && lbPhotos.length > 1) rhLbNav(dx < 0 ? 1 : -1);
+}, { passive: true });
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { document.getElementById('rh-lb').classList.remove('open'); document.body.style.overflow = ''; }
+  if (e.key === 'ArrowRight') rhLbNav(1);
+  if (e.key === 'ArrowLeft') rhLbNav(-1);
+});
+
+/* ══════════════════════════════════════
+   БІЛЬШЕ
+══════════════════════════════════════ */
+document.getElementById('rh-more-btn').addEventListener('click', () => {
+  document.getElementById('rh-more-btn').textContent = 'Завантаження...';
+  load(false);
+});
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+(function start() {
+  const el = document.getElementById('rh-root');
+  let started = false;
+  const go = () => { if (!started) { started = true; load(true); } };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '800px 0px' });
+    io.observe(el);
+  } else go();
+})();
+</script>
+</body>
+</html>

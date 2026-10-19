@@ -241,6 +241,7 @@ body { background: #F4F2EF; color: var(--ink); font-family: var(--ff); font-weig
     <div class="adm-meta">
       <span id="hdr-pending" style="color:var(--warn-bg);display:none;background:var(--warn-bg);color:var(--warn);padding:4px 10px;font-size:11px;">⚡ <span id="pending-cnt">0</span> на модерації</span>
       <button class="btn-logout" id="btn-optimize" onclick="optimizePhotos()" title="Стиснути старі фото і створити мініатюри">⚡ Оптимізувати фото</button>
+      <button class="btn-logout" onclick="changePassword()">Змінити пароль</button>
       <button class="btn-logout" onclick="logout()">Вийти</button>
     </div>
   </header>
@@ -470,6 +471,17 @@ function showApp() {
 function logout() {
   if (session) fetch(`${SB_URL}/auth/v1/logout`, { method: 'POST', headers: { 'apikey': SB_PUB, 'Authorization': 'Bearer ' + session.access } }).catch(() => {});
   sessionStorage.removeItem('adm_session'); location.reload();
+}
+async function changePassword() {
+  const p1 = prompt('Новий пароль (мінімум 10 символів):');
+  if (!p1) return;
+  if (p1.length < 10) return toast('Пароль має бути не коротший за 10 символів', 'err');
+  if (prompt('Повторіть новий пароль:') !== p1) return toast('Паролі не збігаються', 'err');
+  try {
+    const r = await fetch(`${SB_URL}/auth/v1/user`, { method: 'PUT', headers: await H({ 'Content-Type': 'application/json' }), body: JSON.stringify({ password: p1 }) });
+    if (!r.ok) throw new Error((await r.json()).msg || 'Не вдалося змінити');
+    toast('Пароль змінено ✓', 'ok');
+  } catch (e) { toast('Помилка: ' + e.message, 'err'); }
 }
 document.getElementById('pwd-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
 if (session) showApp();

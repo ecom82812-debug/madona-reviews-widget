@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Відгуки</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  background: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  color: #111;
+  -webkit-font-smoothing: antialiased;
+}
+
+.rw { padding: 48px 36px 52px; border-top: 1px solid #E8E8E8; max-width: 1160px; margin: 0 auto; }
+.rw-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 28px; border-bottom: 1px solid #111; margin-bottom: 0; }
+.rw-header-left { }
+.rw-label { font-size: 9px; letter-spacing: .24em; text-transform: uppercase; color: #BBB; margin-bottom: 8px; }
+.rw-title { font-family: 'Libre Baskerville', serif; font-size: 22px; font-weight: 400; color: #111; }
+.rw-score-block { display: flex; align-items: baseline; gap: 6px; flex-shrink: 0; }
+.rw-score-num { font-family: 'Libre Baskerville', serif; font-size: 48px; font-weight: 700; line-height: 1; color: #111; letter-spacing: -.04em; }
+.rw-score-meta { display: flex; flex-direction: column; gap: 4px; padding-bottom: 6px; }
+.rw-score-stars { display: flex; gap: 2px; }
+.rw-score-star { width: 13px; height: 13px; fill: #111; }
+.rw-score-star.e { fill: #E0E0E0; }
+.rw-score-cnt { font-size: 10px; color: #AAA; letter-spacing: .1em; white-space: nowrap; }
+.rw-bars { display: flex; flex-direction: column; gap: 6px; padding: 20px 0 28px; border-bottom: 1px solid #F0F0F0; margin-bottom: 0; }
+.rw-bar-row { display: grid; grid-template-columns: 10px 1fr 24px; align-items: center; gap: 10px; cursor: pointer; }
+.rw-bar-row:hover .rw-bar-fill { background: #555; }
+.rw-bar-lbl { font-size: 11px; color: #AAA; }
+.rw-bar-track { height: 2px; background: #F0F0F0; position: relative; overflow: hidden; }
+.rw-bar-fill { position: absolute; inset: 0; background: #111; width: 0; transition: width .7s cubic-bezier(.22,.61,.36,1); }
+.rw-bar-cnt { font-size: 10px; color: #AAA; text-align: right; }
+.rw-filters { display: flex; gap: 6px; flex-wrap: wrap; padding: 16px 0 24px; border-bottom: 1px solid #F0F0F0; }
+.rw-filter { padding: 5px 14px; font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 400; letter-spacing: .1em; text-transform: uppercase; border: 1px solid #E0E0E0; background: transparent; color: #AAA; cursor: pointer; transition: all .15s; }
+.rw-filter:hover { border-color: #999; color: #555; }
+.rw-filter.active { border-color: #111; background: #111; color: #fff; }
+.rw-list { display: flex; flex-direction: column; }
+.rw-item { display: grid; grid-template-columns: 140px 1fr; gap: 28px; padding: 24px 0; border-bottom: 1px solid #F4F4F4; opacity: 0; transform: translateY(8px); animation: itemIn .35s forwards; }
+.rw-item:nth-child(1) { animation-delay: .04s; }
+.rw-item:nth-child(2) { animation-delay: .08s; }
+.rw-item:nth-child(3) { animation-delay: .12s; }
+.rw-item:nth-child(n+4) { animation-delay: .16s; }
+@keyframes itemIn { to { opacity: 1; transform: translateY(0); } }
+.rw-author { font-size: 13px; font-weight: 400; color: #111; margin-bottom: 3px; }
+.rw-date { font-size: 10px; color: #BBB; letter-spacing: .06em; margin-bottom: 10px; }
+.rw-stars { display: flex; gap: 2px; }
+.rw-star { width: 11px; height: 11px; fill: #111; }
+.rw-star.e { fill: #E0E0E0; }
+.rw-badge { display: inline-block; margin-top: 8px; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: #888; border: 1px solid #E8E8E8; padding: 2px 8px; }
+.rw-fit { display: inline-block; margin-top: 6px; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: #999; }
+.rw-rtitle { font-family: 'Libre Baskerville', serif; font-size: 15px; font-weight: 400; color: #111; margin-bottom: 8px; line-height: 1.35; }
+.rw-rbody { font-family: 'DM Sans', sans-serif; font-weight: 300; color: #111; }
+.rw-photos { display: flex; gap: 6px; margin-top: 12px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+.rw-photos::-webkit-scrollbar { display: none; }
+.rw-photo { width: 56px; height: 68px; object-fit: cover; flex-shrink: 0; scroll-snap-align: start; cursor: pointer; filter: grayscale(20%); transition: filter .2s, opacity .2s; }
+.rw-photo:hover { filter: grayscale(0); opacity: .85; }
+.rw-empty { padding: 48px 0; text-align: center; font-family: 'Libre Baskerville', serif; font-style: italic; font-size: 16px; color: #CCC; }
+.rw-loading { padding: 48px 0; display: flex; justify-content: center; }
+.spinner { width: 20px; height: 20px; border: 1px solid #E0E0E0; border-top-color: #111; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.rw-more { padding: 24px 0 0; display: flex; justify-content: space-between; align-items: center; }
+.btn-more { font-family: 'DM Sans', sans-serif; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #999; background: none; border: 1px solid #E8E8E8; padding: 9px 24px; cursor: pointer; transition: all .2s; }
+.btn-more:hover { border-color: #111; color: #111; }
+.btn-more:disabled { opacity: .3; cursor: not-allowed; }
+.rw-write-row { padding: 20px 0 4px; }
+.rw-write { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; color: #fff; background: #111; border: none; padding: 12px 28px; cursor: pointer; transition: background .2s, transform .15s; display: inline-block; }
+.rw-write:hover { background: #333; transform: translateY(-1px); }
+.rw-form-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s cubic-bezier(.22,.61,.36,1); margin-top: 0; }
+.rw-form-wrap.open { grid-template-rows: 1fr; margin-top: 28px; }
+.rw-form-inner { overflow: hidden; }
+.rw-form { padding: 28px 0 4px; border-top: 1px solid #E8E8E8; display: flex; flex-direction: column; gap: 16px; opacity: 0; transform: translateY(8px); transition: opacity .35s .1s ease, transform .35s .1s ease; }
+.rw-form-wrap.open .rw-form { opacity: 1; transform: translateY(0); }
+.form-title { font-family: 'Libre Baskerville', serif; font-size: 18px; font-weight: 400; margin-bottom: 4px; }
+.f-star-row { display: flex; flex-direction: row-reverse; width: fit-content; gap: 4px; }
+.f-star-row input { display: none; }
+.f-star-row label { font-size: 24px; cursor: pointer; color: #DEDEDE; transition: color .1s; line-height: 1; }
+.f-star-row label:hover, .f-star-row label:hover ~ label, .f-star-row input:checked ~ label { color: #111; }
+.f-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.f-field { display: flex; flex-direction: column; gap: 6px; }
+.f-field label { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: #AAA; }
+.f-field input, .f-field textarea, .f-field select { padding: 9px 12px; background: #FAFAFA; border: 1px solid #E8E8E8; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 300; color: #111; outline: none; transition: border-color .2s; -webkit-appearance: none; }
+.f-field input:focus, .f-field textarea:focus, .f-field select:focus { border-color: #111; background: #fff; }
+.f-field input::placeholder, .f-field textarea::placeholder { color: #CCC; }
+.f-field textarea { resize: vertical; min-height: 90px; }
+.f-photo-label { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px dashed #E0E0E0; cursor: pointer; transition: border-color .2s; }
+.f-photo-label:hover { border-color: #999; }
+.f-photo-label input { display: none; }
+.f-photo-icon { font-size: 18px; color: #CCC; }
+.f-photo-txt { font-size: 11px; color: #AAA; }
+.f-photo-txt strong { display: block; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #999; font-weight: 400; }
+.f-previews { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.f-preview { position: relative; width: 56px; height: 68px; }
+.f-preview img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(20%); }
+.f-preview-rm { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; background: rgba(0,0,0,.5); border: none; color: #fff; font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.btn-submit { padding: 13px; background: #111; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; border: none; cursor: pointer; font-weight: 400; transition: background .2s; }
+.btn-submit:hover { background: #333; }
+.btn-submit:disabled { opacity: .4; cursor: not-allowed; }
+.form-note { font-size: 12px; text-align: center; min-height: 18px; }
+.form-note.ok { color: #4A7A5A; }
+.form-note.err { color: #A04040; }
+.rw-reply { margin-top: 14px; padding: 14px 16px; background: #F7F5F2; border-left: 2px solid #111; display: flex; flex-direction: column; gap: 6px; }
+.rw-reply-head { display: flex; align-items: center; gap: 8px; }
+.rw-reply-badge { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; font-weight: 500; background: #111; color: #fff; padding: 2px 8px; }
+.rw-reply-date { font-size: 10px; color: #BBB; letter-spacing: .05em; }
+.rw-reply-text { font-size: 13px; color: #444; line-height: 1.7; font-weight: 300; }
+.lb { position: fixed; inset: 0; background: rgba(0,0,0,.92); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.lb.open { opacity: 1; pointer-events: all; }
+.lb img { max-width: 82vw; max-height: 85vh; object-fit: contain; }
+.lb-x { position: absolute; top: 20px; right: 24px; font-size: 22px; background: none; border: none; color: #888; cursor: pointer; transition: color .2s; }
+.lb-x:hover { color: #fff; }
+.lb-prev, .lb-next { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.1); border: none; color: #fff; font-size: 28px; cursor: pointer; padding: 14px 18px; line-height: 1; transition: background .2s; }
+.lb-prev:hover, .lb-next:hover { background: rgba(255,255,255,.22); }
+.lb-prev { left: 10px; }
+.lb-next { right: 10px; }
+.lb-prev.hidden, .lb-next.hidden { display: none; }
+.lb-counter { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 12px; color: rgba(255,255,255,.5); font-family: 'DM Sans', sans-serif; letter-spacing: .1em; }
+
+@media (max-width: 640px) {
+  .rw { padding: 32px 20px 40px; }
+  .rw-item { grid-template-columns: 1fr; gap: 8px; }
+  .rw-left { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .rw-date { margin-bottom: 0; }
+  .rw-rbody { font-size: 13px; }
+  .f-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="rw" id="reviews-widget">
+  <div class="rw-header">
+    <div class="rw-header-left">
+      <div class="rw-label">Покупці про цей товар</div>
+      <div class="rw-title">Відгуки</div>
+    </div>
+    <div class="rw-score-block">
+      <div class="rw-score-num" id="rw-score-num" style="display:none">—</div>
+      <div class="rw-score-meta" id="rw-score-meta" style="display:none">
+        <div class="rw-score-stars" id="rw-score-stars"></div>
+        <div class="rw-score-cnt" id="rw-score-cnt"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rw-bars" id="rw-bars" style="display:none">
+    <div class="rw-bar-row" onclick="setFilter(5)"><span class="rw-bar-lbl">5</span><div class="rw-bar-track"><div class="rw-bar-fill" id="bar5"></div></div><span class="rw-bar-cnt" id="cnt5">0</span></div>
+    <div class="rw-bar-row" onclick="setFilter(4)"><span class="rw-bar-lbl">4</span><div class="rw-bar-track"><div class="rw-bar-fill" id="bar4"></div></div><span class="rw-bar-cnt" id="cnt4">0</span></div>
+    <div class="rw-bar-row" onclick="setFilter(3)"><span class="rw-bar-lbl">3</span><div class="rw-bar-track"><div class="rw-bar-fill" id="bar3"></div></div><span class="rw-bar-cnt" id="cnt3">0</span></div>
+    <div class="rw-bar-row" onclick="setFilter(2)"><span class="rw-bar-lbl">2</span><div class="rw-bar-track"><div class="rw-bar-fill" id="bar2"></div></div><span class="rw-bar-cnt" id="cnt2">0</span></div>
+    <div class="rw-bar-row" onclick="setFilter(1)"><span class="rw-bar-lbl">1</span><div class="rw-bar-track"><div class="rw-bar-fill" id="bar1"></div></div><span class="rw-bar-cnt" id="cnt1">0</span></div>
+  </div>
+
+  <div class="rw-write-row">
+    <button class="rw-write" id="btn-write" onclick="toggleForm()">+ Залишити відгук</button>
+  </div>
+  <div class="rw-form-wrap" id="rw-form-wrap">
+    <div class="rw-form-inner"><div class="rw-form">
+      <div class="form-title">Ваше враження</div>
+      <div>
+        <div style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#AAA;margin-bottom:8px">Оцінка *</div>
+        <div class="f-star-row">
+          <input type="radio" name="fr" id="fr5" value="5"><label for="fr5">★</label>
+          <input type="radio" name="fr" id="fr4" value="4"><label for="fr4">★</label>
+          <input type="radio" name="fr" id="fr3" value="3"><label for="fr3">★</label>
+          <input type="radio" name="fr" id="fr2" value="2"><label for="fr2">★</label>
+          <input type="radio" name="fr" id="fr1" value="1"><label for="fr1">★</label>
+        </div>
+      </div>
+      <div class="f-grid">
+        <div class="f-field"><label>Ваше ім'я *</label><input type="text" id="fn" placeholder="Ольга М." maxlength="60"></div>
+        <div class="f-field"><label>Розмір підійшов?</label><select id="ffit"><option value="">— оберіть —</option><option value="small">Маломірить</option><option value="true">По розміру</option><option value="large">Великомірить</option></select></div>
+      </div>
+      <div class="f-field"><label>Заголовок</label><input type="text" id="ftitle" placeholder="Коротко про враження…" maxlength="100"></div>
+      <div class="f-field"><label>Відгук *</label><textarea id="fbody" placeholder="Розкажіть про посадку, якість, доставку…" maxlength="1400"></textarea></div>
+      <div class="f-field">
+        <label>Фото (до 5 шт.)</label>
+        <label class="f-photo-label">
+          <input type="file" id="fphotos" accept="image/*" multiple onchange="addPhotos(this)">
+          <span class="f-photo-icon">⊕</span>
+          <div class="f-photo-txt"><strong>Додати фото</strong>Натисніть або перетягніть</div>
+        </label>
+        <div class="f-previews" id="f-previews"></div>
+      </div>
+      <input type="text" id="f-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+      <button class="btn-submit" id="btn-submit" onclick="submitReview()">Надіслати відгук</button>
+      <div class="form-note" id="form-note"></div>
+    </div></div>
+  </div>
+
+  <div class="rw-filters">
+    <button class="rw-filter active" data-r="0" onclick="setFilter(0,this)">Всі</button>
+    <button class="rw-filter" data-r="5" onclick="setFilter(5,this)">★ 5</button>
+    <button class="rw-filter" data-r="4" onclick="setFilter(4,this)">★ 4</button>
+    <button class="rw-filter" data-r="3" onclick="setFilter(3,this)">★ 3</button>
+    <button class="rw-filter" data-r="2" onclick="setFilter(2,this)">★ 2</button>
+    <button class="rw-filter" data-r="1" onclick="setFilter(1,this)">★ 1</button>
+    <button class="rw-filter" data-fit="true" onclick="setFit('true',this)">По розміру</button>
+    <button class="rw-filter" data-fit="large" onclick="setFit('large',this)">Великомірить</button>
+    <button class="rw-filter" data-fit="small" onclick="setFit('small',this)">Маломірить</button>
+  </div>
+
+  <div class="rw-list" id="rw-list"><div class="rw-loading"><div class="spinner"></div></div></div>
+  <div class="rw-more" id="rw-more" style="display:none"><button class="btn-more" id="btn-more" onclick="loadMore()">Показати ще</button></div>
+  <div style="padding-top:20px;display:none" id="write-only"></div>
+</div>
+
+<div class="lb" id="lb" onclick="closeLb(event)">
+  <button class="lb-x" onclick="closeLb()">✕</button>
+  <button class="lb-prev" id="lb-prev" onclick="lbNav(-1);event.stopPropagation()">‹</button>
+  <img id="lb-img" src="" alt="">
+  <button class="lb-next" id="lb-next" onclick="lbNav(1);event.stopPropagation()">›</button>
+  <span class="lb-counter" id="lb-counter"></span>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   КОНФІГУРАЦІЯ
+   Ключів тут немає: віджет звертається до власного API магазину,
+   яке відповідає лише сайту madona.com.ua.
+══════════════════════════════════════ */
+const RW_API     = 'https://pjbkmajnbqabkunlikoe.supabase.co/functions/v1/reviews-api';
+const PAGE_SIZE  = 5;
+const MODERATION = true;
+const CACHE_TTL  = 10 * 60 * 1000; // 10 хв кешу в браузері
+
+function getProductId() {
+  const p = new URLSearchParams(window.location.search).get('product_id');
+  if (p) return p;
+  const el = document.getElementById('reviews-widget');
+  if (el?.dataset?.productId) return el.dataset.productId;
+  return window.location.pathname.replace(/\//g,'-').replace(/^-|-$/g,'') || 'demo-product';
+}
+const PRODUCT_ID  = getProductId();
+const PRODUCT_UID = (PRODUCT_ID.match(/tproduct[-/](\d{6,})/) || [])[1] || '';
+
+/* ══════════════════════════════════════
+   API + кеш (якщо сервер недоступний — показуємо збережене)
+══════════════════════════════════════ */
+async function api(qs) {
+  const key = 'rw:' + qs;
+  let c = null;
+  try { c = JSON.parse(localStorage.getItem(key) || 'null'); } catch {}
+  if (c && Date.now() - c.t < CACHE_TTL) return c.d;
+  try {
+    const r = await fetch(RW_API + '?' + qs);
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), d })); } catch {}
+    return d;
+  } catch (e) { if (c) return c.d; throw e; }
+}
+function productQs(offset) {
+  let q = `a=product&uid=${PRODUCT_UID}&limit=${PAGE_SIZE}&offset=${offset}`;
+  if (st.filterRating) q += `&rating=${st.filterRating}`;
+  if (st.filterFit)    q += `&fit=${encodeURIComponent(st.filterFit)}`;
+  return q;
+}
+
+/* ── стиснення фото перед відправкою ── */
+function loadImg(file) {
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+}
+async function resizeTo(img, max, q) {
+  const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  let b = await new Promise(r => c.toBlob(r, 'image/webp', q));
+  if (!b || b.type !== 'image/webp') b = await new Promise(r => c.toBlob(r, 'image/jpeg', q));
+  return b;
+}
+async function uploadPhoto(id, k, file) {
+  const fd = new FormData();
+  try {
+    const img = await loadImg(file);
+    const full = await resizeTo(img, 1600, 0.82);
+    const thumb = await resizeTo(img, 400, 0.75);
+    URL.revokeObjectURL(img.src);
+    const ext = full.type === 'image/webp' ? 'webp' : 'jpg';
+    fd.append('full', full, 'photo.' + ext);
+    fd.append('thumb', thumb, 'thumb.' + ext);
+  } catch {
+    fd.append('full', file, file.name); // браузер не зміг стиснути — відправляємо як є
+  }
+  const r = await fetch(`${RW_API}?a=photo&id=${id}&k=${k}`, { method: 'POST', body: fd });
+  if (!r.ok) throw new Error('photo ' + r.status);
+}
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let st = { reviews:[], offset:0, filterRating:0, filterFit:'', hasMore:false, loading:false };
+let selectedFiles = [];
+let formOpenedAt = 0;
+
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtD = iso => new Date(iso).toLocaleDateString('uk-UA',{day:'numeric',month:'long',year:'numeric'});
+const fitMap = { small:'Маломірить', true:'По розміру', large:'Великомірить' };
+
+function starsHtml(n, cls='rw-star', size=11) {
+  return Array.from({length:5},(_,i)=>
+    `<svg class="${cls}${i<n?'':' e'}" width="${size}" height="${size}" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
+  ).join('');
+}
+
+function applyStats(d) {
+  if (!d?.count) return;
+  const avg = (+d.avg).toFixed(1);
+  const el = document.getElementById('rw-score-num');
+  el.textContent = avg; el.style.display = '';
+  document.getElementById('rw-score-stars').innerHTML = starsHtml(Math.round(d.avg),'rw-score-star',13);
+  document.getElementById('rw-score-cnt').textContent = `${d.count} відгуків`;
+  document.getElementById('rw-score-meta').style.display = '';
+  document.getElementById('rw-bars').style.display = '';
+  updateProductRating(avg, d.count);
+  const total = +d.count || 1;
+  [5,4,3,2,1].forEach((s,i)=>{
+    const cnt = +d.dist[i] || 0;
+    document.getElementById(`cnt${s}`).textContent = cnt;
+    setTimeout(()=>{ document.getElementById(`bar${s}`).style.width=(cnt/total*100)+'%'; },150);
+  });
+}
+function loadStats() { /* статистика приходить разом з відгуками */ }
+
+function updateProductRating(avg, total) {
+  const pStars = document.querySelectorAll('.pr-star');
+  const rounded = Math.round(+avg);
+  pStars.forEach((s,i) => s.classList.toggle('e', i >= rounded));
+  const pCount = document.querySelector('.pr-count');
+  const pLink  = document.querySelector('.pr-link');
+  if (pCount) pCount.textContent = avg;
+  if (pLink)  pLink.textContent  = `${total} відгуків ↓`;
+}
+
+async function load(reset=false) {
+  if (st.loading) return;
+  st.loading = true;
+  if (reset) { st.offset=0; st.reviews=[]; }
+  const listEl = document.getElementById('rw-list');
+  if (reset) listEl.innerHTML = '<div class="rw-loading"><div class="spinner"></div></div>';
+  try {
+    if (!PRODUCT_UID) throw new Error('no uid');
+    const d = await api(productQs(st.offset));
+    if (d.stats && !st.statsShown) { applyStats(d.stats); st.statsShown = true; }
+    const page = d.items || [];
+    st.hasMore = !!d.more;
+    st.reviews = reset ? page : [...st.reviews, ...page];
+    st.offset += page.length;
+    render(reset);
+    const moreWrap = document.getElementById('rw-more');
+    moreWrap.style.display = st.hasMore || st.reviews.length ? 'flex' : 'none';
+    document.getElementById('write-only').style.display = (st.hasMore || st.reviews.length) ? 'none' : 'block';
+    document.getElementById('btn-more').style.display = st.hasMore ? '' : 'none';
+  } catch(e) {
+    listEl.innerHTML = PRODUCT_UID
+      ? `<p style="text-align:center;color:#A04040;padding:32px 0;font-size:13px">Не вдалося завантажити відгуки. Оновіть сторінку.</p>`
+      : '<div class="rw-empty">Поки немає відгуків. Будьте першим!</div>';
+  }
+  st.loading = false;
+}
+
+function loadMore() { load(false); }
+
+function render(full) {
+  const el = document.getElementById('rw-list');
+  if (!st.reviews.length) { el.innerHTML = '<div class="rw-empty">Поки немає відгуків. Будьте першим!</div>'; return; }
+  const html = st.reviews.map(r => {
+    const photos = (r.photos||[]).map((p,i)=>
+      `<img class="rw-photo" src="${esc(p.t||p.u)}" loading="lazy" decoding="async" alt="Фото покупця" data-full="${esc(p.u)}" data-idx="${i}" data-rid="${esc(r.id)}" onclick="openLbR(this)">`
+    ).join('');
+    return `<div class="rw-item">
+      <div class="rw-left">
+        <div class="rw-author">${esc(r.author_name)}</div>
+        <div class="rw-date">${fmtD(r.created_at)}</div>
+        <div class="rw-stars">${starsHtml(r.rating)}</div>
+        ${r.verified ? `<span class="rw-badge">✓ Покупка</span>` : ''}
+        ${r.size_fit ? `<div class="rw-fit">${fitMap[r.size_fit]||''}</div>` : ''}
+      </div>
+      <div class="rw-right">
+        ${r.title ? `<div class="rw-rtitle">${esc(r.title)}</div>` : ''}
+        <div class="rw-rbody">${esc(r.body)}</div>
+        ${photos ? `<div class="rw-photos">${photos}</div>` : ''}
+        ${r.reply_text ? `<div class="rw-reply"><div class="rw-reply-head"><span class="rw-reply-badge">Магазин</span>${r.reply_date ? `<span class="rw-reply-date">${fmtD(r.reply_date)}</span>` : ''}</div><div class="rw-reply-text">${esc(r.reply_text)}</div></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML = html;
+}
+
+function setFilter(r, btn) {
+  st.filterRating = r; st.filterFit = ''; st.offset = 0;
+  document.querySelectorAll('.rw-filter').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else { const match = document.querySelector(`.rw-filter[data-r="${r}"]`); if (match) match.classList.add('active'); }
+  load(true);
+}
+function setFit(fit, btn) {
+  st.filterFit = st.filterFit===fit ? '' : fit;
+  st.filterRating = 0; st.offset = 0;
+  document.querySelectorAll('.rw-filter').forEach(b=>b.classList.remove('active'));
+  if (st.filterFit) btn.classList.add('active');
+  else document.querySelector('.rw-filter[data-r="0"]').classList.add('active');
+  load(true);
+}
+
+function toggleForm() {
+  const wrap = document.getElementById('rw-form-wrap');
+  const btn  = document.getElementById('btn-write');
+  const isOpen = wrap.classList.toggle('open');
+  if (isOpen && !formOpenedAt) formOpenedAt = Date.now();
+  btn.textContent = isOpen ? '− Скасувати' : '+ Залишити відгук';
+}
+
+function addPhotos(input) {
+  const files = Array.from(input.files);
+  selectedFiles = [...selectedFiles, ...files.slice(0, 5 - selectedFiles.length)];
+  renderPreviews();
+}
+function removePhoto(i) { selectedFiles.splice(i,1); renderPreviews(); }
+function renderPreviews() {
+  document.getElementById('f-previews').innerHTML = selectedFiles.map((f,i)=>{
+    const url = URL.createObjectURL(f);
+    return `<div class="f-preview"><img src="${url}"><button class="f-preview-rm" onclick="removePhoto(${i})">✕</button></div>`;
+  }).join('');
+}
+
+async function submitReview() {
+  const note = document.getElementById('form-note');
+  const rEl  = document.querySelector('input[name="fr"]:checked');
+  const name = document.getElementById('fn').value.trim();
+  const body = document.getElementById('fbody').value.trim();
+  const rating = rEl ? +rEl.value : 0;
+  note.textContent=''; note.className='form-note';
+  if (!name)   return setNote('Введіть ваше ім\'я','err');
+  if (!rating) return setNote('Оберіть оцінку','err');
+  if (!body)   return setNote('Напишіть відгук','err');
+  const btn = document.getElementById('btn-submit');
+  btn.disabled=true; btn.textContent='Надсилаємо…';
+  try {
+    const nameEl = document.querySelector('.t-store__prod-popup__name, .js-store-prod-name, .t-store__prod-title, h1.t-heading');
+    const productName = nameEl ? nameEl.textContent.trim() : '';
+    const productUrl  = window.location.href.split('?')[0];
+    const r = await fetch(RW_API + '?a=submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        product_id: PRODUCT_ID, product_name: productName || null, product_url: productUrl || null,
+        author_name: name, rating, title: document.getElementById('ftitle').value.trim() || null,
+        body, size_fit: document.getElementById('ffit').value || null,
+        hp: document.getElementById('f-hp').value, t: formOpenedAt ? Date.now() - formOpenedAt : null,
+      })
+    });
+    if (r.status === 429) throw new Error('limit');
+    if (!r.ok) throw new Error('submit');
+    const rev = await r.json();
+    let photoFail = 0;
+    if (selectedFiles.length && rev?.id) {
+      btn.textContent = 'Завантажуємо фото…';
+      for (const f of selectedFiles) {
+        try { await uploadPhoto(rev.id, rev.k, f); } catch(pe){ photoFail++; console.warn('photo',pe); }
+      }
+    }
+    setNote(photoFail ? `Відгук надіслано, але ${photoFail} фото не завантажились.` : 'Дякуємо! Відгук з\'явиться після перевірки.', photoFail ? 'err' : 'ok');
+    document.querySelectorAll('input[name="fr"]').forEach(r=>r.checked=false);
+    ['fn','ftitle','fbody'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('ffit').value='';
+    selectedFiles=[]; renderPreviews();
+  } catch(e) {
+    setNote(e.message === 'limit' ? 'Забагато відгуків з вашої мережі. Спробуйте пізніше.' : 'Помилка. Спробуйте ще раз.','err');
+  }
+  btn.disabled=false; btn.textContent='Надіслати відгук';
+}
+function setNote(t,c){ const el=document.getElementById('form-note'); el.textContent=t; el.className='form-note '+c; }
+
+let lbPhotos = [], lbIdx = 0;
+function openLbR(imgEl) {
+  const rid = imgEl.dataset.rid;
+  const all = Array.from(document.querySelectorAll(`.rw-photo[data-rid="${rid}"]`));
+  lbPhotos = all.map(el => el.dataset.full || el.src);
+  lbIdx = parseInt(imgEl.dataset.idx) || 0;
+  lbRender();
+  document.getElementById('lb').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function lbRender() {
+  document.getElementById('lb-img').src = lbPhotos[lbIdx];
+  const counter = document.getElementById('lb-counter');
+  counter.textContent = lbPhotos.length > 1 ? (lbIdx+1) + ' / ' + lbPhotos.length : '';
+  document.getElementById('lb-prev').classList.toggle('hidden', lbPhotos.length <= 1);
+  document.getElementById('lb-next').classList.toggle('hidden', lbPhotos.length <= 1);
+}
+function lbNav(dir) { lbIdx = (lbIdx + dir + lbPhotos.length) % lbPhotos.length; lbRender(); }
+function closeLb(e) {
+  if (e && e.target !== document.getElementById('lb') && !e.target.classList.contains('lb-x')) return;
+  document.getElementById('lb').classList.remove('open');
+  document.body.style.overflow = '';
+}
+let lbTX = 0;
+document.getElementById('lb').addEventListener('touchstart', e => { lbTX = e.touches[0].clientX; }, {passive:true});
+document.getElementById('lb').addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - lbTX;
+  if (Math.abs(dx) > 40 && lbPhotos.length > 1) lbNav(dx < 0 ? 1 : -1);
+}, {passive:true});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){ document.getElementById('lb').classList.remove('open'); document.body.style.overflow=''; document.getElementById('rw-form-wrap').classList.remove('open'); }
+  if(e.key==='ArrowRight') lbNav(1);
+  if(e.key==='ArrowLeft')  lbNav(-1);
+});
+
+(function start() {
+  const el = document.getElementById('reviews-widget');
+  let started = false;
+  const go = () => { if (started) return; started = true; load(true); };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '800px 0px' });
+    io.observe(el);
+  } else go();
+  // клік по рейтингу вгорі сторінки — теж запускає завантаження
+  document.addEventListener('click', e => { if (e.target.closest('[id^="rw-header-"], .pr-link')) go(); });
+})();
+</script>
+</body>
+</html>
