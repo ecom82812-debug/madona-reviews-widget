@@ -1,11 +1,12 @@
 /*
- * reviews-catalog.js v4 — зірочки рейтингу в каталозі та під назвою товару
- * Ключів немає: один маленький запит до API магазину на всі товари,
- * результат кешується в браузері на 10 хвилин.
+ * reviews-catalog.js v5 — зірочки рейтингу в каталозі та під назвою товару
+ * Рейтинги беруться з готового «знімка» ratings.json (сховище review-cache, роздається через CDN),
+ * а не з бази: база на перегляд каталогу не навантажується. Кеш у браузері — 10 хвилин,
+ * якщо сервер не відповів за 8 с — показуємо збережені раніше рейтинги.
  */
 (function () {
-  var API = 'https://pjbkmajnbqabkunlikoe.supabase.co/functions/v1/reviews-api?a=ratings';
-  var CACHE_KEY = 'rw:ratings';
+  var API = 'https://pjbkmajnbqabkunlikoe.supabase.co/storage/v1/object/public/review-cache/v1/ratings.json';
+  var CACHE_KEY = 'rw:ratings2';
   var TTL = 10 * 60 * 1000;
   var ratings = null;
   var pending = null;
@@ -17,8 +18,10 @@
     var c = null;
     try { c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch (e) {}
     if (c && Date.now() - c.t < TTL) { ratings = c.d; return Promise.resolve(ratings); }
-    pending = fetch(API)
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    var ctl = window.AbortController ? new AbortController() : null;
+    var tm = setTimeout(function () { if (ctl) ctl.abort(); }, 8000);
+    pending = fetch(API, ctl ? { signal: ctl.signal } : {})
+      .then(function (r) { clearTimeout(tm); if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (d) {
         ratings = d.r || {};
         try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d: ratings })); } catch (e) {}
