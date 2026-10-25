@@ -77,7 +77,7 @@
   function currentUid() {
     var m = window.location.pathname.match(/tproduct[\/\-](\d{6,})/);
     if (m) return m[1];
-    var popup = document.querySelector('.t-popup_show .t-store__prod-popup, .t-store__prod-popup');
+    var popup = document.querySelector('.t-popup_show .t-store__prod-popup, .t-store__prod-popup, .t-catalog__product-snippet');
     if (popup) {
       var uid = popup.getAttribute('data-product-gen-uid');
       if (uid) return uid;
@@ -90,7 +90,7 @@
   function renderProductRating() {
     var uid = currentUid();
     if (!uid || document.getElementById('rw-header-' + uid)) return;
-    var titleEl = document.querySelector('.t-store__prod-popup__name, .js-store-prod-name');
+    var titleEl = document.querySelector('.t-store__prod-popup__name, .js-store-prod-name, .t-catalog__prod-popup__name, .js-catalog-prod-name');
     if (!titleEl) return;
     getRatings().then(function (map) {
       if (document.getElementById('rw-header-' + uid)) return;
