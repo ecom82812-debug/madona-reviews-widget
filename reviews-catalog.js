@@ -2,13 +2,13 @@
  * reviews-catalog.js v6 — зірочки рейтингу в каталозі та під назвою товару
  * Працює і зі старим блоком каталогу (t-store__…), і з новим ST340 (t-catalog__…).
  * Рейтинги беруться з готового «знімка» ratings.json (сховище review-cache, роздається через CDN),
- * а не з бази: база на перегляд каталогу не навантажується. Кеш у браузері — 10 хвилин,
+ * а не з бази: база на перегляд каталогу не навантажується. Кеш у браузері — 3 хвилини (щоб схвалені відгуки швидко з’являлись),
  * якщо сервер не відповів за 8 с — показуємо збережені раніше рейтинги.
  */
 (function () {
   var API = 'https://pjbkmajnbqabkunlikoe.supabase.co/storage/v1/object/public/review-cache/v1/ratings.json';
   var CACHE_KEY = 'rw:ratings2';
-  var TTL = 10 * 60 * 1000;
+  var TTL = 3 * 60 * 1000;
   var ratings = null;
   var pending = null;
 
