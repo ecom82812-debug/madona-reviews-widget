@@ -1,5 +1,6 @@
 /*
- * reviews-catalog.js v5 — зірочки рейтингу в каталозі та під назвою товару
+ * reviews-catalog.js v6 — зірочки рейтингу в каталозі та під назвою товару
+ * Працює і зі старим блоком каталогу (t-store__…), і з новим ST340 (t-catalog__…).
  * Рейтинги беруться з готового «знімка» ratings.json (сховище review-cache, роздається через CDN),
  * а не з бази: база на перегляд каталогу не навантажується. Кеш у браузері — 10 хвилин,
  * якщо сервер не відповів за 8 с — показуємо збережені раніше рейтинги.
@@ -47,7 +48,7 @@
   // 1. КАТАЛОГ
   // ══════════════════════════════════════════════════════════
   function renderCatalog() {
-    var cards = document.querySelectorAll('.t-store__card[data-product-gen-uid]:not([data-rw-done])');
+    var cards = document.querySelectorAll('.t-store__card[data-product-gen-uid]:not([data-rw-done]), .t-catalog__card[data-product-gen-uid]:not([data-rw-done])');
     if (!cards.length) return;
     getRatings().then(function (map) {
       var size = window.innerWidth <= 768 ? 12 : 14;
@@ -63,7 +64,7 @@
         el.innerHTML = starsHtml(x[0], size) +
           '<strong style="color:#111;font-weight:500;">' + x[0].toFixed(1) + '</strong>' +
           '<span style="color:#AAA;font-size:11px;">(' + x[1] + ')</span>';
-        var title = card.querySelector('.t-store__card__title, .t-store__card-title, .js-store-prod-name, [class*="title"], h3, h2');
+        var title = card.querySelector('.t-store__card__title, .t-catalog__card__title, .t-store__card-title, .js-store-prod-name, .js-product-name, [class*="title"], h3, h2');
         if (title && title.parentNode) title.parentNode.insertBefore(el, title.nextSibling);
         else card.appendChild(el);
       });
