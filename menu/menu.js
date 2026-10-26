@@ -57,7 +57,7 @@
     '.mm-wa{height:46px;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--ink);color:#fff!important;font-family:"DM Sans",sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}',
     'html.mm-lock,html.mm-lock body{overflow:hidden!important}',
     'body.mm-on .t706__carticon{display:none!important}',
-    'body.mm-pad{padding-top:60px!important}',
+    'body.mm-pad{padding-top:24px!important}',
     '.mm-nosearch [data-mm-search]{display:none!important}',
     '@media (hover:hover){.mm-cats a:hover,.mm-service a:hover{opacity:.6}}',
     /* комп'ютер */
@@ -74,7 +74,7 @@
     '.mm-service{padding:28px 32px 24px}',
     '.mm-contact{padding:20px 32px 28px}',
     'body.mm-on{padding-top:28px}',
-    'body.mm-pad{padding-top:72px!important}',
+    'body.mm-pad{padding-top:0!important}',
     '}'
   ].join('\n');
 
