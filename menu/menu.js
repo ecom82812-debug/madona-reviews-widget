@@ -56,7 +56,8 @@
     '.mm-tel{font-size:18px;font-weight:600;letter-spacing:.02em}',
     '.mm-wa{height:46px;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--ink);color:#fff!important;font-family:"DM Sans",sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}',
     'html.mm-lock,html.mm-lock body{overflow:hidden!important}',
-    'body.mm-on .t706__carticon.t-menuwidgeticons__button_hidden_2009917893{display:block!important}',
+    'body.mm-on.mm-hascart .t706__carticon.t-menuwidgeticons__button_hidden_2009917893{display:block!important}',
+    'body.mm-on:not(.mm-hascart) .t706__carticon{display:none!important}',
     'body.mm-on .t-rec[data-record-type="758"]{margin-top:18px}',
     'body.mm-pad{padding-top:24px!important}',
     '.mm-nosearch [data-mm-search]{display:none!important}',
@@ -161,6 +162,7 @@
     function syncCount() {
       var n = 0;
       try { if (window.tcart) { n = parseInt(tcart.total, 10) || 0; if (!n && tcart.products) tcart.products.forEach(function (p) { if (p && !p.deleted) n += parseInt(p.quantity || 1, 10) || 0; }); } } catch (e) {}
+      document.body.classList.toggle('mm-hascart', n > 0);
       countEl.hidden = !n; countEl.textContent = n > 99 ? '99+' : n;
       countEl.parentNode.setAttribute('aria-label', n ? 'Кошик, товарів: ' + n : 'Кошик');
     }
