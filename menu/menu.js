@@ -56,7 +56,12 @@
     '.mm-tel{font-size:18px;font-weight:600;letter-spacing:.02em}',
     '.mm-wa{height:46px;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--ink);color:#fff!important;font-family:"DM Sans",sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}',
     'html.mm-lock,html.mm-lock body{overflow:hidden!important}',
-    'body.mm-on.mm-hascart .t706__carticon.t-menuwidgeticons__button_hidden_2009917893{display:block!important}',
+    /* кругла іконка кошика Тільди: лише в картці товару і лише з товарами; нижче шапки */
+    'body.mm-on:not(.mm-pad) .t706__carticon{display:none!important}',
+    'body.mm-pad .t706__carticon{top:80px!important;right:16px!important}',
+    /* «Повернутися назад» і хрестик картки товару — під шапкою */
+    'body.mm-pad .t-catalog__prod-popup__close-txt-wr,body.mm-pad .t-store__prod-popup__close-txt-wr{top:84px!important}',
+    'body.mm-pad .t-popup__close{display:none!important}',
     'body.mm-on:not(.mm-hascart) .t706__carticon{display:none!important}',
     'body.mm-on .t-rec[data-record-type="758"]{margin-top:18px}',
     'body.mm-pad{padding-top:24px!important}',
@@ -78,6 +83,9 @@
     'body.mm-on{padding-top:28px}',
     'body.mm-on .t-rec[data-record-type="758"]{margin-top:0}',
     'body.mm-pad{padding-top:0!important}',
+    'body.mm-pad .t706__carticon{top:140px!important;right:40px!important}',
+    'body.mm-pad .t-catalog__prod-popup__close-txt-wr,body.mm-pad .t-store__prod-popup__close-txt-wr,body.mm-pad .t-popup__close{top:90px!important}',
+    'body.mm-pad .t-popup__close{display:block!important}',
     '}'
   ].join('\n');
 
