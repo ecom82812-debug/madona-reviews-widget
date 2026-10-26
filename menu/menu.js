@@ -58,7 +58,7 @@
     'html.mm-lock,html.mm-lock body{overflow:hidden!important}',
     /* кругла іконка кошика Тільди: лише в картці товару і лише з товарами; нижче шапки */
     'body.mm-on:not(.mm-pad) .t706__carticon{display:none!important}',
-    'body.mm-pad .t706__carticon{top:80px!important;right:16px!important}',
+    'body.mm-pad .t706__carticon{top:auto!important;bottom:20px!important;right:16px!important}',
     /* «Повернутися назад» і хрестик картки товару — під шапкою */
     'body.mm-pad .t-catalog__prod-popup__close-txt-wr,body.mm-pad .t-store__prod-popup__close-txt-wr{top:84px!important}',
     '@media (max-width:1023px){body.mm-pad .t-popup__close{display:none!important}}',
@@ -83,7 +83,7 @@
     'body.mm-on{padding-top:28px}',
     'body.mm-on .t-rec[data-record-type="758"]{margin-top:0}',
     'body.mm-pad{padding-top:0!important}',
-    'body.mm-pad .t706__carticon{top:140px!important;right:40px!important}',
+    'body.mm-pad .t706__carticon{top:140px!important;bottom:auto!important;right:40px!important}',
     'body.mm-pad .t-catalog__prod-popup__close-txt-wr,body.mm-pad .t-store__prod-popup__close-txt-wr,body.mm-pad .t-popup__close{top:90px!important}',
     '}'
   ].join('\n');
