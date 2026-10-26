@@ -61,7 +61,7 @@
     'body.mm-pad .t706__carticon{top:80px!important;right:16px!important}',
     /* «Повернутися назад» і хрестик картки товару — під шапкою */
     'body.mm-pad .t-catalog__prod-popup__close-txt-wr,body.mm-pad .t-store__prod-popup__close-txt-wr{top:84px!important}',
-    'body.mm-pad .t-popup__close{display:none!important}',
+    '@media (max-width:1023px){body.mm-pad .t-popup__close{display:none!important}}',
     'body.mm-on:not(.mm-hascart) .t706__carticon{display:none!important}',
     'body.mm-on .t-rec[data-record-type="758"]{margin-top:18px}',
     'body.mm-pad{padding-top:24px!important}',
@@ -85,7 +85,6 @@
     'body.mm-pad{padding-top:0!important}',
     'body.mm-pad .t706__carticon{top:140px!important;right:40px!important}',
     'body.mm-pad .t-catalog__prod-popup__close-txt-wr,body.mm-pad .t-store__prod-popup__close-txt-wr,body.mm-pad .t-popup__close{top:90px!important}',
-    'body.mm-pad .t-popup__close{display:block!important}',
     '}'
   ].join('\n');
 
