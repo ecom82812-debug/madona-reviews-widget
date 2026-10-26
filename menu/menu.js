@@ -56,7 +56,8 @@
     '.mm-tel{font-size:18px;font-weight:600;letter-spacing:.02em}',
     '.mm-wa{height:46px;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--ink);color:#fff!important;font-family:"DM Sans",sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}',
     'html.mm-lock,html.mm-lock body{overflow:hidden!important}',
-    'body.mm-on .t706__carticon{display:none!important}',
+    'body.mm-on .t706__carticon.t-menuwidgeticons__button_hidden_2009917893{display:block!important}',
+    'body.mm-on .t-rec[data-record-type="758"]{margin-top:18px}',
     'body.mm-pad{padding-top:24px!important}',
     '.mm-nosearch [data-mm-search]{display:none!important}',
     '@media (hover:hover){.mm-cats a:hover,.mm-service a:hover{opacity:.6}}',
@@ -74,6 +75,7 @@
     '.mm-service{padding:28px 32px 24px}',
     '.mm-contact{padding:20px 32px 28px}',
     'body.mm-on{padding-top:28px}',
+    'body.mm-on .t-rec[data-record-type="758"]{margin-top:0}',
     'body.mm-pad{padding-top:0!important}',
     '}'
   ].join('\n');
