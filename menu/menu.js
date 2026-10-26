@@ -56,6 +56,9 @@
     '.mm-tel{font-size:18px;font-weight:600;letter-spacing:.02em}',
     '.mm-wa{height:46px;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--ink);color:#fff!important;font-family:"DM Sans",sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}',
     'html.mm-lock,html.mm-lock body{overflow:hidden!important}',
+    'body.mm-on .t706__carticon{display:none!important}',
+    'body.mm-pad{padding-top:60px!important}',
+    '.mm-nosearch [data-mm-search]{display:none!important}',
     '@media (hover:hover){.mm-cats a:hover,.mm-service a:hover{opacity:.6}}',
     /* комп'ютер */
     '@media (min-width:1024px){',
@@ -71,6 +74,7 @@
     '.mm-service{padding:28px 32px 24px}',
     '.mm-contact{padding:20px 32px 28px}',
     'body.mm-on{padding-top:28px}',
+    'body.mm-pad{padding-top:72px!important}',
     '}'
   ].join('\n');
 
@@ -116,6 +120,10 @@
     var box = document.createElement('div'); box.innerHTML = HTML;
     document.body.appendChild(box.firstElementChild);
     document.body.classList.add('mm-on');
+    // сторінки без загальної шапки (картка товару): відступ під меню
+    if (!document.getElementById('rec2009917893')) document.body.classList.add('mm-pad');
+    // немає штатного пошуку Тільди на сторінці — ховаємо кнопки пошуку
+    if (!document.querySelector('a[href="#opensearch"], .t985')) document.getElementById('mm').classList.add('mm-nosearch');
     var $ = function (id) { return document.getElementById(id); };
     var drawer = $('mm-drawer'), shade = $('mm-shade'), bar = $('mm-bar'), burger = document.querySelector('[data-mm-open]');
 
